@@ -1,0 +1,51 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  UV_SYSTEM_PYTHON: "1"
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "{{cookiecutter.python_version}}"
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Sync dependencies
+        run: uv sync --dev
+
+      - name: Ruff lint
+        run: uv run ruff check src/ tests/
+
+      - name: Ruff format (check only)
+        run: uv run ruff format --check src/ tests/
+
+      - name: Type check
+        run: uv run mypy src/
+
+      - name: Unit tests
+        run: uv run pytest -m unit
+
+      - name: Integration tests (skipped)
+        run: |
+          echo "Integration tests require real API keys; run locally before pushing."
+          exit 0 # skip integration tests in CI
+
+      - name: Coverage report
+        run: uv run pytest --cov={{cookiecutter.package_name}} --cov-report=xml

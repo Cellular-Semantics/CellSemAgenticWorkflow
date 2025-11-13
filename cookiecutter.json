@@ -1,0 +1,14 @@
+{
+  "project_name": "Agentic Workflow",
+  "project_slug": "{{ cookiecutter.project_name|lower|replace(' ', '-') }}",
+  "package_name": "{{ cookiecutter.project_slug|replace('-', '_') }}",
+  "description": "Composable agentic workflow project",
+  "author_name": "Cellular Semantics",
+  "license": "MIT",
+  "python_version": "3.11",
+  "openai_model": "gpt-4.1",
+  "github_org": "Cellular-Semantics",
+  "_copy_without_render": [
+    ".github/workflows/*"
+  ]
+}

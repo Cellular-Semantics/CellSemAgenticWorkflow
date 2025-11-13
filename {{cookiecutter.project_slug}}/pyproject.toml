@@ -1,0 +1,66 @@
+[project]
+name = "{{cookiecutter.project_slug}}"
+version = "0.1.0"
+description = "{{cookiecutter.description}}"
+readme = "README.md"
+requires-python = ">= {{cookiecutter.python_version}}"
+dependencies = [
+    "python-dotenv>=1.0.1",
+    "pydantic>=2.7.0",
+    "pydantic-ai>=1.16.0",
+    "jsonschema>=4.22.0",
+    "cellsem-llm-client @ git+https://github.com/Cellular-Semantics/cellsem_llm_client.git@main",
+    "deep-research-client @ git+https://github.com/monarch-initiative/deep-research-client.git@main",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+    "sphinx>=7.3.0",
+    "sphinx-autodoc-typehints>=1.25.0",
+    "myst-parser>=2.0.0",
+    "pre-commit>=3.7.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"{{cookiecutter.package_name}}" = ["schemas/*.schema.json"]
+
+[tool.pytest.ini_options]
+addopts = "-m 'unit'"
+markers = [
+    "unit: fast, isolated tests",
+    "integration: real API and IO tests",
+]
+
+[tool.ruff]
+src = ["src", "tests"]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+packages = ["{{cookiecutter.package_name}}"]
+python_version = "{{cookiecutter.python_version}}"
+disallow_untyped_defs = true
+strict_optional = true
+warn_unused_ignores = true
+
+[tool.coverage.run]
+source = ["src/{{cookiecutter.package_name}}"]
+
+[tool.uv]
+managed = true
