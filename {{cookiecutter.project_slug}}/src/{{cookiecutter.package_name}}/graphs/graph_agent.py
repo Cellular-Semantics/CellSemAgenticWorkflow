@@ -8,6 +8,8 @@ from pydantic_ai import Agent, RunContext
 
 from .definitions import GraphNode, WorkflowGraph
 
+DEFAULT_LLM_MODEL = "gpt-4.1"
+
 
 @dataclass
 class GraphDependencies:
@@ -16,7 +18,7 @@ class GraphDependencies:
     graph: WorkflowGraph
 
 
-def build_graph_agent(model: str = "{{cookiecutter.openai_model}}") -> Agent[GraphDependencies, GraphNode]:
+def build_graph_agent(model: str = DEFAULT_LLM_MODEL) -> Agent[GraphDependencies, GraphNode]:
     """Construct a Pydantic AI agent to navigate workflow graphs."""
 
     instructions = (

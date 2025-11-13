@@ -25,6 +25,7 @@ def test_cookiecutter_json_defines_core_variables() -> None:
         "package_name",
         "python_version",
         "github_org",
+        "git_remote",
     }
     missing = required_keys.difference(config)
     assert not missing, f"cookiecutter.json missing keys: {sorted(missing)}"
@@ -38,6 +39,7 @@ def test_template_contains_minimal_agentic_structure() -> None:
         TEMPLATE_ROOT / "pyproject.toml",
         TEMPLATE_ROOT / "README.md",
         TEMPLATE_ROOT / "CLAUDE.md",
+        TEMPLATE_ROOT / "LICENSE",
         TEMPLATE_ROOT / ".gitignore",
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "__init__.py",
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "graphs" / "__init__.py",
@@ -45,6 +47,7 @@ def test_template_contains_minimal_agentic_structure() -> None:
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "schemas" / "__init__.py",
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "services" / "__init__.py",
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "utils" / "__init__.py",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "validation" / "__init__.py",
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "graphs" / "definitions.py",
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "graphs" / "graph_agent.py",
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "schemas" / "workflow_output.schema.json",
@@ -66,6 +69,7 @@ def test_template_contains_minimal_agentic_structure() -> None:
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "schemas",
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "services",
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "utils",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "validation",
     ]
     dir_missing = [d for d in expected_directories if not d.is_dir()]
     human_dirs = [_relative(path) for path in dir_missing]
@@ -85,9 +89,11 @@ def test_template_contains_minimal_agentic_structure() -> None:
         "pydantic-ai",
         "JSON Schema",
         "src/{{cookiecutter.package_name}}/utils",
+        "Workflow validations live in src/{{cookiecutter.package_name}}/validation",
         "git config core.hooksPath .githooks",
         "GitHub Actions runs only `uv run pytest -m unit`",
         "pre-commit hook runs unit and integration tests",
+        "Generated repo auto-inits git and sets origin to",
     ]
     absent = [fragment for fragment in expected_fragments if fragment not in readme_text]
     assert not absent, f"README missing required sections: {absent}"
@@ -106,6 +112,7 @@ def test_template_contains_minimal_agentic_structure() -> None:
         fragment for fragment in workflow_fragments if fragment not in workflow_text
     ]
     assert not workflow_missing, f"Workflow missing required commands: {workflow_missing}"
+
 
 
 @pytest.mark.unit
@@ -145,3 +152,12 @@ def test_pyproject_declares_required_dependencies() -> None:
     assert (
         "[tool.uv]" in pyproject_text and "managed = true" in pyproject_text
     ), "pyproject.toml must declare uv management via [tool.uv]"
+
+
+@pytest.mark.unit
+def test_post_gen_hook_initializes_git_with_remote() -> None:
+    hook_path = REPO_ROOT / "hooks" / "post_gen_project.sh"
+    assert hook_path.exists(), "Cookiecutter post_gen_project hook missing"
+    contents = hook_path.read_text()
+    assert "git init" in contents, "Hook must initialize git repo"
+    assert "{{cookiecutter.git_remote}}" in contents, "Hook must configure git remote via template variable"

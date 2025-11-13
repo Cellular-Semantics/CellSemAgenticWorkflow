@@ -33,6 +33,8 @@ git config core.hooksPath .githooks
 
 # Pre-commit hook runs lint, unit tests, and integration tests (requires real API keys)
 pre-commit hook runs unit and integration tests before commits.
+
+Generated repo auto-inits git and sets origin to whatever you enter for `git_remote` (default: `git@github.com:{{cookiecutter.github_org}}/{{cookiecutter.project_slug}}.git`). Update the remote if you plan to push elsewhere.
 ```
 
 ### Environment Setup
@@ -91,6 +93,9 @@ Optional workflow graphs powered by Pydantic ensure orchestration definitions ar
 - `src/{{cookiecutter.package_name}}/schemas`: JSON Schema contracts describing outputs + business rules
 - `src/{{cookiecutter.package_name}}/services`: Concrete integrations (CellSem LLM client, Deepsearch)
 - `src/{{cookiecutter.package_name}}/utils`: Repo-specific tooling/helpers that support workflows without being agents
+- `src/{{cookiecutter.package_name}}/validation`: Cross-cutting workflow validations (schema checks, service registration guards)
+
+Workflow validations live in src/{{cookiecutter.package_name}}/validation. Use this module to centralize logic that inspects graphs, schemas, or services before workflows execute.
 
 ### Graph Agents with pydantic-ai
 
@@ -133,6 +138,25 @@ validate(instance=payload, schema=schema)
 ```
 
 Schemas stay in JSON so downstream services (Python, JS, workflows) can share the same contract without importing Pydantic models.
+
+### Workflow Validation Helpers
+
+```python
+from {{cookiecutter.package_name}}.validation import ensure_services_registered, validate_workflow_output
+
+validate_workflow_output({
+    "status": "completed",
+    "summary": "Finished triage.",
+    "actions": [{"name": "deepsearch.query"}],
+})
+
+ensure_services_registered(
+    service_names=["deepsearch.query", "summarize"],
+    available=["deepsearch.query", "summarize", "collect"],
+)
+```
+
+Keep complex business logic validations in `src/{{cookiecutter.package_name}}/validation` to centralize enforcement and reuse them across agents and tests.
 
 ## 📋 Requirements
 
