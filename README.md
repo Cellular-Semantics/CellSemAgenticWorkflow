@@ -1,5 +1,10 @@
 > Opinionated cookiecutter template for Cellular Semantics agentic-workflow repositories.
 
+[![Template Tests](https://github.com/Cellular-Semantics/CellSemAgenticWorkflow/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/Cellular-Semantics/CellSemAgenticWorkflow/actions/workflows/tests.yml)
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![cookiecutter](https://img.shields.io/badge/built%20with-cookiecutter-blue.svg)](https://cookiecutter.readthedocs.io/)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+
 # CellSem Agentic Workflow Template
 
 This repo hosts the source template that generates new agentic workflow projects.  
