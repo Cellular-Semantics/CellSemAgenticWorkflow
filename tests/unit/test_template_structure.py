@@ -106,6 +106,7 @@ def test_template_contains_minimal_agentic_structure() -> None:
         "uv run ruff format --check",
         "uv run mypy",
         "uv run pytest -m unit",
+        'python-version: ["3.10", "3.11", "3.12"]',
         "exit 0 # skip integration tests in CI",
     ]
     workflow_missing = [
