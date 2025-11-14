@@ -5,6 +5,13 @@ description = "Add your description here"
 requires-python = ">=3.9"
 dependencies = []
 
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.6.0",
+    "mypy>=1.10.0",
+    "pytest>=8.2.0",
+]
+
 [tool.pytest.ini_options]
 markers = [
     "unit: fast, isolated tests",
