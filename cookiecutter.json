@@ -8,6 +8,7 @@
   "python_version": "3.11",
   "github_org": "Cellular-Semantics",
   "git_remote": "git@github.com:{{cookiecutter.github_org}}/{{cookiecutter.project_slug}}.git",
+  "strict_quality_checks": ["y", "n"],
   "_copy_without_render": [
     ".github/workflows/*"
   ]

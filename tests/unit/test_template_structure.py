@@ -26,9 +26,18 @@ def test_cookiecutter_json_defines_core_variables() -> None:
         "python_version",
         "github_org",
         "git_remote",
+        "strict_quality_checks",
     }
     missing = required_keys.difference(config)
     assert not missing, f"cookiecutter.json missing keys: {sorted(missing)}"
+
+    # Validate strict_quality_checks is a list with 'y' and 'n' options
+    assert isinstance(config["strict_quality_checks"], list), \
+        "strict_quality_checks must be a list of options"
+    assert "y" in config["strict_quality_checks"], \
+        "strict_quality_checks must include 'y' option"
+    assert "n" in config["strict_quality_checks"], \
+        "strict_quality_checks must include 'n' option"
 
 
 @pytest.mark.unit
