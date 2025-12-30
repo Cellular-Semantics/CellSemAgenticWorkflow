@@ -1,0 +1,221 @@
+# Project Scaffold Guide
+
+This guide helps you understand the generated project structure and decide what to keep for your Ring 0 MVP.
+
+## Infrastructure (Always Keep)
+
+These components prevent technical debt and ensure consistency across all projects:
+
+- **`src/{{cookiecutter.package_name}}/__init__.py`** - Bootstrap with dotenv loading
+- **`src/{{cookiecutter.package_name}}/schemas/`** - JSON schemas directory (schema-first design)
+- **`*.prompt.yaml` files** - Co-located with agents/services that use them
+- **`tests/unit/`** and **`tests/integration/`** - Testing structure with pytest markers
+- **`pyproject.toml`**, tooling configs - Development infrastructure (ruff, mypy, pytest, sphinx)
+- **`.github/workflows/`** - CI/CD pipeline
+- **`.githooks/`** - Pre-commit quality checks
+
+### Prompt File Naming Convention
+
+**Always use `.prompt.yaml` suffix** for easy identification and discoverability:
+
+**Examples:**
+- `src/{{cookiecutter.package_name}}/agents/annotator.prompt.yaml` - Single prompt for agent
+- `src/{{cookiecutter.package_name}}/services/deepsearch.query.prompt.yaml` - Specific purpose
+- `src/{{cookiecutter.package_name}}/services/deepsearch.summary.prompt.yaml` - Another purpose
+
+**Benefits:**
+- Easy to find all prompts: `find . -name "*.prompt.yaml"`
+- Clear ownership: prompt lives next to code that uses it
+- Easy to review: `git diff **/*.prompt.yaml`
+- Grepable: search for prompt-related changes across project
+- Version controlled: track prompt evolution in git
+
+---
+
+## Optional Components (Evaluate for Ring 0)
+
+### `graphs/` - Workflow Orchestration
+
+**Keep if** your Ring 0 needs:
+- Multi-step workflows with branching logic
+- Complex dependencies between steps
+- Dynamic routing based on runtime conditions
+- Type-safe workflow definitions
+
+**Delete if**:
+- Single agent or linear flow sufficient
+- Simple sequential operations
+- No branching or complex routing needed
+
+**Provided**: Working example of pydantic-ai graph orchestration with typed dependencies
+
+---
+
+### `validation/` - Cross-cutting Validations
+
+**Keep if** your Ring 0 has:
+- Complex validation logic used across multiple services
+- Business rules that span multiple components
+- Schema validations beyond simple Pydantic models
+
+**Delete if**:
+- Simple validation in service layer is sufficient
+- No shared validation logic across components
+
+**Ring 0 guidance**: Likely not needed. Add in Ring 1+ if you discover duplicated validation logic.
+
+**Alternative**: Keep validation in service layer until pattern emerges (don't premature abstract).
+
+**Provided**: Empty directory with README explaining usage patterns
+
+---
+
+### `agents/` - Agent Classes
+
+**Keep if** your Ring 0 has:
+- Multiple agents with shared patterns
+- Complex agent coordination
+- Agent orchestration needs
+
+**Delete if**:
+- Single simple agent is sufficient
+- No shared patterns between agents yet
+
+**Provided**: Example agent demonstrating schema-first and prompt-first patterns
+
+---
+
+### `deep-research-client` Integration
+
+**Keep if** your Ring 0 needs:
+- Deep research workflows
+- Perplexity API integration
+- Literature search and synthesis
+
+**Delete if**:
+- Not using deep research capabilities in Ring 0
+- Different research tool needed
+
+**Action**: Remove from `pyproject.toml` dependencies if not needed
+
+---
+
+## Example Code (Replace with Domain Logic)
+
+Files and code marked with `# EXAMPLE` comments are working demonstrations:
+
+- **Purpose**: Show proven patterns (schema-first, prompt-first, co-located prompts)
+- **Action**: Replace with your domain-specific logic
+- **Keep**: The patterns and infrastructure
+- **Maintain**: Test structure and documentation style
+
+---
+
+## Week 0 Checklist
+
+Use this checklist during your Week 0 validation phase:
+
+- [ ] **Define Ring 0 scope** in CLAUDE.md (update "Ring 0 Scope" section)
+- [ ] **Review each directory** against your Ring 0 requirements
+- [ ] **Delete unused optional components** (graphs/, validation/, agents/ if not needed)
+- [ ] **Remove unused dependencies** from pyproject.toml (e.g., deep-research-client)
+- [ ] **Replace example code** with first real use case
+- [ ] **Update README.md** with your project description and purpose
+- [ ] **Create .env file** with required API keys
+- [ ] **Run integration tests** to validate API access
+- [ ] **Document architectural decisions** in CLAUDE.md
+
+---
+
+## Decision Tree
+
+```
+Is your Ring 0 a single, simple agent?
+├─ YES → Delete: graphs/, validation/, example agents/
+│         Keep: schemas/, tests/, tooling, one real agent
+│
+└─ NO → Multi-step workflow?
+    ├─ YES → Keep: graphs/, agents/
+    │         Evaluate: validation/ (probably defer to Ring 1)
+    │
+    └─ NO → Linear multi-agent?
+            Keep: agents/
+            Delete: graphs/, validation/
+```
+
+---
+
+## Common Patterns to Follow
+
+### 1. Schema-First Design
+
+```python
+# schemas/my_input.schema.json
+{
+  "$comment": "Define business logic in JSON schema first",
+  "type": "object",
+  "properties": {
+    "query": {"type": "string"},
+    "max_results": {"type": "integer", "default": 10}
+  },
+  "required": ["query"]
+}
+
+# Then generate Pydantic model programmatically
+# (using cellsem-llm-client utilities)
+```
+
+### 2. Prompt-First Design
+
+```yaml
+# agents/my_agent.prompt.yaml
+system_prompt: |
+  You are an AI assistant specialized in {domain}.
+
+user_prompt: |
+  {task_description}
+
+presets:
+  openai-gpt4:
+    provider: openai
+    model: gpt-4
+    temperature: 0.1
+```
+
+```python
+# agents/my_agent.py
+def load_prompt(prompt_file: str) -> dict:
+    """Load co-located prompt file."""
+    prompt_path = Path(__file__).parent / prompt_file
+    return yaml.safe_load(prompt_path.read_text())
+```
+
+### 3. Test Structure
+
+```python
+# tests/unit/test_parser.py
+@pytest.mark.unit
+def test_parser_logic():
+    """Fast, isolated, no external dependencies."""
+    pass
+
+# tests/integration/test_api.py
+@pytest.mark.integration
+def test_real_api_connection():
+    """Real API, fail hard if no credentials."""
+    if not os.getenv("API_KEY"):
+        pytest.fail("API_KEY required for integration tests")
+    # Test with real API
+```
+
+---
+
+## Questions?
+
+- Review `CLAUDE.md` for full development philosophy and ring-based approach
+- See directory-specific `README.md` files for detailed component guidance
+- Check `README.md` for quick start and architecture overview
+
+---
+
+**Remember**: Infrastructure ≠ premature abstraction. Schema files, prompt files, and testing patterns are infrastructure that prevent technical debt.
