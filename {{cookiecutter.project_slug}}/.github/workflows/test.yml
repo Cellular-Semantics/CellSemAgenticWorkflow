@@ -6,9 +6,6 @@ on:
       - main
   pull_request:
 
-env:
-  UV_SYSTEM_PYTHON: "1"
-
 jobs:
   quality:
     runs-on: ubuntu-latest
