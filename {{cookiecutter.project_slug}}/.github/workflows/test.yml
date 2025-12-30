@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+env:
+  UV_SYSTEM_PYTHON: "1"
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -27,15 +30,8 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Verify uv installation
-        run: |
-          uv --version
-          which uv
-
-      - name: Install dependencies
-        run: |
-          uv pip install -e ".[dev]"
-          uv pip list
+      - name: Sync dependencies
+        run: uv sync --dev
 
       - name: Ruff lint
         run: uv run ruff check src/ tests/
