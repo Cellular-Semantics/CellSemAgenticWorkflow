@@ -10,6 +10,15 @@
 
 ## 🚀 Quick Start
 
+### Understanding This Scaffold
+
+This project was generated from a standardized template. **See `SCAFFOLD_GUIDE.md` for**:
+- What's **infrastructure** (keep always) vs **optional** (evaluate for your Ring 0)
+- What's **example code** (replace with your domain logic)
+- **Decision trees** for each component (graphs/, validation/, etc.)
+
+**Week 0 Task**: Review scaffold and remove components not needed for your Ring 0 MVP.
+
 ### Installation
 
 ```bash

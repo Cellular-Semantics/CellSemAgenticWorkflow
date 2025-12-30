@@ -1,4 +1,10 @@
-"""Pydantic-powered graph primitives for orchestrating workflows."""
+"""Pydantic-powered graph primitives for orchestrating workflows.
+
+OPTIONAL: Delete entire graphs/ directory if Ring 0 doesn't need workflow orchestration.
+INFRASTRUCTURE: If you keep this, the pattern (Pydantic models, typed dependencies) is standard.
+
+See: src/{{cookiecutter.package_name}}/graphs/README.md for guidance on when to use.
+"""
 
 from __future__ import annotations
 
