@@ -1,20 +1,12 @@
-[project]
-name = "{{cookiecutter.project_slug}}"
-version = "0.1.0"
-description = "{{cookiecutter.description}}"
-readme = "README.md"
-requires-python = ">= {{cookiecutter.python_version}}"
-dependencies = [
-    "python-dotenv>=1.0.1",
-    "pydantic>=2.7.0",
-    "pydantic-ai>=1.16.0",
-    "jsonschema>=4.22.0",
-    "cellsem-llm-client @ git+https://github.com/Cellular-Semantics/cellsem_llm_client.git@main",
-    "deep-research-client @ git+https://github.com/monarch-initiative/deep-research-client.git@main",
+[tool.uv.workspace]
+members = [
+    "src/{{cookiecutter.package_name}}",
+    "src/{{cookiecutter.package_name}}_validation_tools",
 ]
 
-[project.optional-dependencies]
-dev = [
+[tool.uv]
+managed = true
+dev-dependencies = [
     "pytest>=8.0.0",
     "pytest-cov>=4.1.0",
     "ruff>=0.5.0",
@@ -25,17 +17,8 @@ dev = [
     "pre-commit>=3.7.0",
 ]
 
-[build-system]
-requires = ["setuptools>=68.0"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-data]
-"{{cookiecutter.package_name}}" = ["schemas/*.schema.json"]
-
 [tool.pytest.ini_options]
+testpaths = ["tests"]
 addopts = "-m 'unit'"
 markers = [
     "unit: fast, isolated tests",
@@ -53,14 +36,14 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 quote-style = "double"
 
 [tool.mypy]
-packages = ["{{cookiecutter.package_name}}"]
+packages = ["{{cookiecutter.package_name}}", "{{cookiecutter.package_name}}_validation_tools"]
 python_version = "{{cookiecutter.python_version}}"
 disallow_untyped_defs = true
 strict_optional = true
 warn_unused_ignores = true
 
 [tool.coverage.run]
-source = ["src/{{cookiecutter.package_name}}"]
-
-[tool.uv]
-managed = true
+source = [
+    "src/{{cookiecutter.package_name}}",
+    "src/{{cookiecutter.package_name}}_validation_tools",
+]

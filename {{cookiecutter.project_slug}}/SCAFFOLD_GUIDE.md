@@ -2,6 +2,60 @@
 
 This guide helps you understand the generated project structure and decide what to keep for your Ring 0 MVP.
 
+## Two-Package Architecture
+
+This project uses a **two-package structure** managed as a UV workspace for separation of concerns:
+
+### 1. Core Package: `{{cookiecutter.package_name}}`
+
+**Always Keep**: This is your main workflow package.
+
+**Location**: `src/{{cookiecutter.package_name}}/`
+
+**Contains**:
+- Agents, services, orchestration
+- Core business logic
+- Schemas (source of truth - **only location for schemas**)
+- Prompts (co-located with agents/services)
+
+**Publish**: `pip install {{cookiecutter.package_name}}`
+
+### 2. Validation Package: `{{cookiecutter.package_name}}_validation_tools`
+
+**OPTIONAL**: Delete entire directory if not needed for Ring 0.
+
+**Location**: `src/{{cookiecutter.package_name}}_validation_tools/`
+
+**Contains**:
+- Workflow output comparison tools (`comparisons/`)
+- Quality metrics (`metrics/` - precision, recall, F1, etc.)
+- Visualizations (`visualizations/` - heatmaps, ROC curves, plots)
+
+**Depends on**: Core package (imports schemas and models from core)
+
+**Publish**: `pip install {{cookiecutter.package_name}}-validation-tools`
+
+**Keep if**:
+- Need to compare workflow runs
+- Need quality metrics for evaluation
+- Need visualizations for analysis
+- Building tools for workflow validation
+
+**Delete if**:
+- No comparison/analysis needed in Ring 0
+- Simple workflows without evaluation needs
+- Not building validation tooling
+
+### UV Workspace Benefits
+
+- **Single `uv sync`**: Installs both packages in development mode
+- **Shared lockfile**: `uv.lock` ensures reproducibility across team
+- **Local development**: Edit either package, changes reflected immediately
+- **Independent publishing**: Each package can be published to PyPI separately
+- **Clear dependencies**: Validation depends on core, not vice versa
+
+---
+
 ## Infrastructure (Always Keep)
 
 These components prevent technical debt and ensure consistency across all projects:

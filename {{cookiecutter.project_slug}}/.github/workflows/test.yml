@@ -32,9 +32,9 @@ jobs:
           uv --version
           which uv
 
-      - name: Install dependencies
+      - name: Install dependencies (workspace)
         run: |
-          uv pip install -e ".[dev]"
+          uv sync --dev --all-packages
           uv pip list
 
       - name: Ruff lint

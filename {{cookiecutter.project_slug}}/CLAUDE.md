@@ -547,52 +547,59 @@ workflow-runner --input genes.txt --output results/ --resume-from step3
 
 ## Repository Structure
 
-### Two-Package Pattern
+### Two-Package Architecture (UV Workspace)
+
+This project uses **UV workspace** to manage two separately publishable packages:
 
 ```
-repo/
+{{cookiecutter.project_slug}}/
+├── pyproject.toml                           # UV workspace configuration
 ├── src/
-│   ├── workflow_core/          # Core workflow package
-│   │   ├── services/           # API integrations
-│   │   ├── agents/             # LLM agents
-│   │   ├── schemas/            # JSON schemas (shared)
-│   │   └── orchestration/      # Workflow graphs
-│   └── workflow_validation/    # Validation package
-│       ├── comparisons/        # Compare runs
-│       ├── metrics/            # Precision, recall, F1, etc.
-│       ├── visualizations/     # Heatmaps, bubble plots, ROC curves
-│       └── schemas/            # Import from core (DRY)
-├── outputs/                    # Shared outputs directory
-│   └── {project}/
-│       └── {query}/
-│           └── {timestamp}/
-│               ├── input.json
-│               ├── step1_output.json
-│               └── final_results.json
-├── prompts/                    # YAML prompt templates
+│   ├── {{cookiecutter.package_name}}/      # CORE PACKAGE
+│   │   ├── pyproject.toml                   # Core package config
+│   │   └── {{cookiecutter.package_name}}/  # Source code
+│   │       ├── __init__.py                  # Bootstrap with dotenv
+│   │       ├── agents/                      # Agent orchestration
+│   │       │   └── *.prompt.yaml            # Co-located prompts
+│   │       ├── graphs/                      # Workflow graphs (OPTIONAL)
+│   │       ├── schemas/                     # JSON schemas (source of truth)
+│   │       ├── services/                    # LLM + API integrations
+│   │       │   └── *.prompt.yaml            # Co-located prompts
+│   │       ├── utils/                       # Supporting utilities
+│   │       └── validation/                  # Cross-cutting validations (OPTIONAL)
+│   └── {{cookiecutter.package_name}}_validation_tools/  # VALIDATION PACKAGE (OPTIONAL)
+│       ├── pyproject.toml                   # Validation package config
+│       └── {{cookiecutter.package_name}}_validation_tools/
+│           ├── comparisons/                 # Compare workflow runs
+│           ├── metrics/                     # Quality metrics
+│           └── visualizations/              # Analysis plots
 ├── tests/
 │   ├── unit/
 │   └── integration/
 ├── docs/
 ├── scripts/
-│   ├── workflow-runner.py      # Main CLI
 │   └── check-docs.py
-├── pyproject.toml              # UV workspace config
-├── CONSTRAINTS.md              # Week 0 deliverable
-├── SCOPE_RINGS.md              # MVP definition
-└── CLAUDE.md                   # This file
+├── SCAFFOLD_GUIDE.md                        # Scaffold decision guide
+└── CLAUDE.md                                # This file
 ```
 
-**Shared between packages:**
-- ✅ Schemas (via imports, not duplication)
-- ✅ Output directory structure
-- ✅ Standard file formats
+**Core package** (`{{cookiecutter.package_name}}`):
+- **Always keep**: Contains all workflow logic
+- **Owns schemas**: Only location for JSON schemas
+- **Prompts co-located**: `*.prompt.yaml` files next to agents/services
+- Publish: `pip install {{cookiecutter.package_name}}`
 
-**Validation package includes:**
-- Basic stats (precision, recall, F1)
-- ROC curves
-- Heatmaps, bubble plots
-- Comparison tools
+**Validation package** (`{{cookiecutter.package_name}}_validation_tools`):
+- **OPTIONAL**: Delete entire directory if Ring 0 doesn't need validation tooling
+- **Depends on core**: Imports schemas and models from core package
+- **No schema duplication**: Uses `from {{cookiecutter.package_name}}.schemas import ...`
+- Publish: `pip install {{cookiecutter.package_name}}-validation-tools`
+
+**UV Workspace benefits:**
+- Single `uv sync` installs both packages in development mode
+- Shared lockfile (`uv.lock`) for reproducibility
+- Independent publishing to PyPI
+- Clear dependency graph (validation → core)
 
 ---
 
