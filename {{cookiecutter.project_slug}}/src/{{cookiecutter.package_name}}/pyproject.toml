@@ -1,0 +1,33 @@
+[project]
+name = "{{cookiecutter.package_name}}"
+version = "0.1.0"
+description = "{{cookiecutter.description}}"
+readme = "README.md"
+requires-python = ">= {{cookiecutter.python_version}}"
+dependencies = [
+    "python-dotenv>=1.0.1",
+    "pydantic>=2.7.0",
+    "pydantic-ai>=1.16.0",
+    "jsonschema>=4.22.0",
+    "pyyaml>=6.0",
+    "cellsem-llm-client @ git+https://github.com/Cellular-Semantics/cellsem_llm_client.git@main",
+    "deep-research-client @ git+https://github.com/monarch-initiative/deep-research-client.git@main",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+"{{cookiecutter.package_name}}" = ["schemas/*.schema.json", "**/*.prompt.yaml"]

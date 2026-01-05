@@ -10,6 +10,15 @@
 
 ## 🚀 Quick Start
 
+### Understanding This Scaffold
+
+This project was generated from a standardized template. **See `SCAFFOLD_GUIDE.md` for**:
+- What's **infrastructure** (keep always) vs **optional** (evaluate for your Ring 0)
+- What's **example code** (replace with your domain logic)
+- **Decision trees** for each component (graphs/, validation/, etc.)
+
+**Week 0 Task**: Review scaffold and remove components not needed for your Ring 0 MVP.
+
 ### Installation
 
 ```bash
@@ -61,41 +70,93 @@ bootstrap()
 
 Documentation lives in `docs/` and is built with Sphinx + MyST. Run `python scripts/check-docs.py` to build with warnings-as-errors before each commit. Publish the rendered HTML via GitHub Pages or your preferred static host.
 
+## 📦 Package Structure
+
+This project contains **two independently publishable packages** managed as a UV workspace:
+
+### Core Package
+```bash
+pip install {{cookiecutter.package_name}}
+```
+Main workflow package with agents, services, and orchestration. **Always keep this package.**
+
+### Validation Tools (Optional)
+```bash
+pip install {{cookiecutter.package_name}}-validation-tools
+```
+Tools for comparing runs, computing metrics, and visualizing results.
+
+**Note**: Validation package is **OPTIONAL**. Delete `src/{{cookiecutter.package_name}}_validation_tools/` if not needed for your Ring 0 MVP. See `SCAFFOLD_GUIDE.md` for guidance.
+
+## 🛠️ Development
+
+This is a **UV workspace** - a single `uv sync` installs both packages:
+
+```bash
+# Install both packages in development mode
+uv sync --dev
+
+# Run tests for all packages
+uv run pytest
+
+# Lint all packages
+uv run ruff check src/ tests/
+```
+
 ## ✨ Current Features
 
+- ✅ **Two-package architecture** - Core + optional validation tools
+- ✅ **UV workspace** - Modern multi-package management
 - ✅ **Agentic workflow scaffold** with strict TDD guardrails (`CLAUDE.md`)
 - ✅ **Unit & integration test suites** pre-configured with pytest markers
 - ✅ **Docs + automation scripts** for Sphinx builds
 - ✅ **Environment bootstrap** handled via `python-dotenv`
-- ✅ **uv-first packaging** (`pyproject.toml` with Ruff, MyPy, pytest config)
 - ✅ **Integrated clients**: [`cellsem_llm_client`](https://github.com/Cellular-Semantics/cellsem_llm_client) for LLMs and [`deep-research-client`](https://github.com/monarch-initiative/deep-research-client) for Deepsearch workflows
 - ✅ **Pydantic AI graph orchestration**: `pydantic-ai` agent surfaces graph nodes safely with typed deps
+- ✅ **Schema-first design**: JSON schemas → Pydantic models
+- ✅ **Prompt co-location**: `*.prompt.yaml` files next to agents/services
 
 ## 🏗️ Architecture
 
 ```
 {{cookiecutter.project_slug}}/
-├── src/{{cookiecutter.package_name}}/
-│   ├── agents/       # Agent classes coordinating workflows
-│   ├── graphs/       # Optional workflow graphs powered by Pydantic
-│   ├── schemas/      # Shared IO models and contracts
-│   └── services/     # LLM + Deepsearch integration layers
-├── tests/unit/        # Fast, isolated tests
-├── tests/integration/ # Real API + IO validation (no mocks)
-├── docs/              # Sphinx configuration and content
-└── scripts/           # Tooling helpers (docs, chores, etc.)
+├── pyproject.toml                           # UV workspace config
+├── src/
+│   ├── {{cookiecutter.package_name}}/      # CORE PACKAGE
+│   │   ├── pyproject.toml
+│   │   └── {{cookiecutter.package_name}}/
+│   │       ├── agents/                      # Agent orchestration
+│   │       ├── graphs/                      # Workflow graphs (OPTIONAL)
+│   │       ├── schemas/                     # JSON schemas (source of truth)
+│   │       ├── services/                    # LLM + API integrations
+│   │       ├── utils/                       # Supporting utilities
+│   │       └── validation/                  # Cross-cutting validations (OPTIONAL)
+│   └── {{cookiecutter.package_name}}_validation_tools/  # VALIDATION PACKAGE (OPTIONAL)
+│       ├── pyproject.toml
+│       └── {{cookiecutter.package_name}}_validation_tools/
+│           ├── comparisons/                 # Compare workflow runs
+│           ├── metrics/                     # Quality metrics
+│           └── visualizations/              # Analysis plots
+├── tests/
+│   ├── unit/                                # Fast, isolated tests
+│   └── integration/                         # Real API validation (no mocks)
+├── docs/                                    # Sphinx configuration and content
+└── scripts/                                 # Tooling helpers (docs, chores, etc.)
 ```
 
-Optional workflow graphs powered by Pydantic ensure orchestration definitions are validated before agents execute them, keeping schema and runtime behaviors aligned.
+**Core package** (always keep):
+- `agents/`: Agent classes coordinating workflows (prompts co-located as `*.prompt.yaml`)
+- `graphs/`: Optional workflow graphs powered by Pydantic + pydantic-ai
+- `schemas/`: JSON Schema contracts (source of truth for data models)
+- `services/`: LLM and API integrations (CellSem LLM client, Deepsearch)
+- `utils/`: Supporting utilities
+- `validation/`: Cross-cutting validations (OPTIONAL - delete if not needed)
 
-- `src/{{cookiecutter.package_name}}/agents`: Agent entrypoints coordinating services and schemas
-- `src/{{cookiecutter.package_name}}/graphs`: Optional workflow graphs powered by Pydantic + pydantic-ai
-- `src/{{cookiecutter.package_name}}/schemas`: JSON Schema contracts describing outputs + business rules
-- `src/{{cookiecutter.package_name}}/services`: Concrete integrations (CellSem LLM client, Deepsearch)
-- `src/{{cookiecutter.package_name}}/utils`: Repo-specific tooling/helpers that support workflows without being agents
-- `src/{{cookiecutter.package_name}}/validation`: Cross-cutting workflow validations (schema checks, service registration guards)
-
-Workflow validations live in src/{{cookiecutter.package_name}}/validation. Use this module to centralize logic that inspects graphs, schemas, or services before workflows execute.
+**Validation package** (optional - delete if Ring 0 doesn't need):
+- `comparisons/`: Tools for comparing workflow runs
+- `metrics/`: Quality metrics (precision, recall, F1, etc.)
+- `visualizations/`: Analysis plots (heatmaps, ROC curves, etc.)
+- Imports schemas and models from core package (no duplication)
 
 ### Graph Agents with pydantic-ai
 
