@@ -47,6 +47,8 @@ These prevent technical debt and ensure consistency:
 - ✅ **Test structure** - `unit/` and `integration/` with pytest markers
 - ✅ **Tooling configs** - pytest, ruff, mypy, sphinx in `pyproject.toml`
 - ✅ **Dotenv bootstrap** - Environment management via `.env` files
+- ✅ **`experiments/` directory** - Exploratory scripts and Week 0 validation probes;
+  excluded from coverage, mypy, and ruff; not subject to TDD
 
 ### Optional Components (Evaluate for Ring 0)
 
@@ -252,37 +254,43 @@ uv run pytest tests/test_parser.py -k test_new_feature  # Should pass
 
 ### Coverage Targets
 
-**MVP Phase (Week 1-3):**
-- Target: 60% coverage
-- Focus on critical paths
-- Integration tests > unit test coverage
+**Ring 0 (low strictness — selected at project generation):**
+- **Enforced on commit: 60%** — pre-commit hook runs `pytest --cov`; commits fail below this
+- Focus on critical paths; integration tests count more than unit coverage
+- `experiments/` is excluded from all coverage calculations
 
-**Post-MVP (Week 4+):**
-- Target: 80%+ coverage
-- Comprehensive test suite
-- Add edge cases
+**Ring 1+ (high strictness — selected at project generation):**
+- **Enforced on commit: 80%** — same mechanism, higher threshold
+- mypy also blocks commits in this mode
 
 ---
 
 ## Code Quality: Phase-Appropriate Standards
 
-### MVP Phase (Week 1-3): Relaxed
+### MVP Phase / Ring 0 (low strictness): Pragmatic
 
 **Focus:** Deliver value, validate approach
 
 ```bash
-# Run these manually (not blocking)
-uv run mypy src/                      # Type checking (encouraged)
-uv run ruff check --fix src/ tests/   # Lint
-uv run ruff format src/ tests/        # Format code
+# Pre-commit hook runs automatically on each commit:
+uv run ruff check --fix src/ tests/    # Lint (blocks commit)
+uv run ruff format --check src/ tests/ # Format (blocks commit)
+uv run pytest -m unit --cov           # Unit tests + 60% coverage (blocks commit)
+
+# mypy runs in CI but does NOT block commits in this mode:
+uv run mypy src/                       # Type checking (encouraged locally)
+
+# Exploratory work goes here — excluded from all checks:
+# experiments/
 ```
 
 **Standards:**
-- ✅ Integration tests (required)
-- ✅ Type hints (encouraged, not enforced)
-- ✅ Linting (run manually, don't block commits)
-- ✅ Coverage: 60% target
-- ❌ NO pre-commit hooks yet (patterns not stable)
+- ✅ Integration tests (required from day 1)
+- ✅ Type hints (encouraged; not blocking commits in low-strictness mode)
+- ✅ Linting and formatting (enforced on commit)
+- ✅ Coverage: **60% enforced on commit** (not just a target — commits fail below this)
+- ✅ Pre-commit hook active from day 1 (ruff + coverage; mypy in CI only)
+- ✅ `experiments/` is the home for exploratory scripts — write freely, no TDD required
 
 ### Post-MVP Phase (Week 4+): Strict
 
