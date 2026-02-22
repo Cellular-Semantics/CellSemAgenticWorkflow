@@ -14,7 +14,11 @@ uv run mypy src/
 {% endif %}
 
 echo "[githook] Running unit tests with coverage..."
-uv run pytest -m unit --cov
+{% if cookiecutter.strict_quality_checks == 'y' %}
+uv run pytest -m unit --cov --cov-fail-under=80
+{% else %}
+uv run pytest -m unit --cov --cov-fail-under=60
+{% endif %}
 
 echo "[githook] Running integration tests (requires real API keys)..."
 if [[ -z "${OPENAI_API_KEY}" || -z "${ANTHROPIC_API_KEY}" ]]; then

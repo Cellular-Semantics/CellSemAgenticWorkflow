@@ -46,13 +46,15 @@ jobs:
       - name: Type check
         run: uv run mypy src/
 
-      - name: Unit tests
-        run: uv run pytest -m unit
+      - name: Unit tests with coverage
+        run: |
+          {% if cookiecutter.strict_quality_checks == 'y' %}
+          uv run pytest -m unit --cov --cov-fail-under=80 --cov-report=xml
+          {% else %}
+          uv run pytest -m unit --cov --cov-fail-under=60 --cov-report=xml
+          {% endif %}
 
       - name: Integration tests (skipped)
         run: |
           echo "Integration tests require real API keys; run locally before pushing."
           exit 0 # skip integration tests in CI
-
-      - name: Coverage report
-        run: uv run pytest --cov={{cookiecutter.package_name}} --cov-report=xml
