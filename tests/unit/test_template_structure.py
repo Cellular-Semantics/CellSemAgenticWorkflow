@@ -50,22 +50,25 @@ def test_template_contains_minimal_agentic_structure() -> None:
         TEMPLATE_ROOT / "CLAUDE.md",
         TEMPLATE_ROOT / "LICENSE",
         TEMPLATE_ROOT / ".gitignore",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "__init__.py",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "graphs" / "__init__.py",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "agents" / "__init__.py",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "schemas" / "__init__.py",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "services" / "__init__.py",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "utils" / "__init__.py",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "validation" / "__init__.py",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "graphs" / "definitions.py",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "graphs" / "graph_agent.py",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "schemas" / "workflow_output.schema.json",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "__init__.py",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "graphs" / "__init__.py",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "agents" / "__init__.py",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "schemas" / "__init__.py",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "services" / "__init__.py",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "utils" / "__init__.py",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "validation" / "__init__.py",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "graphs" / "definitions.py",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "graphs" / "graph_agent.py",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "schemas" / "workflow_output.schema.json",
         TEMPLATE_ROOT / "tests" / "unit" / "test_unit_placeholder.py",
         TEMPLATE_ROOT / "tests" / "integration" / "test_integration_env.py",
         TEMPLATE_ROOT / "docs" / "conf.py",
         TEMPLATE_ROOT / "scripts" / "check-docs.py",
         TEMPLATE_ROOT / ".githooks" / "pre-commit",
         TEMPLATE_ROOT / ".github" / "workflows" / "test.yml",
+        TEMPLATE_ROOT / "experiments" / "README.md",
+        TEMPLATE_ROOT / "AGENT.md",
+        TEMPLATE_ROOT / ".claude" / "commands" / "run-workflow.md",
     ]
 
     missing = [p for p in expected_paths if not p.exists()]
@@ -73,12 +76,15 @@ def test_template_contains_minimal_agentic_structure() -> None:
     assert not missing, f"Missing template files/directories: {human_readable}"
 
     expected_directories = [
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "agents",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "graphs",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "schemas",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "services",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "utils",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "validation",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "agents",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "graphs",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "schemas",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "services",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "utils",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "validation",
+        TEMPLATE_ROOT / "experiments",
+        TEMPLATE_ROOT / ".claude",
+        TEMPLATE_ROOT / ".claude" / "commands",
     ]
     dir_missing = [d for d in expected_directories if not d.is_dir()]
     human_dirs = [_relative(path) for path in dir_missing]
@@ -93,12 +99,11 @@ def test_template_contains_minimal_agentic_structure() -> None:
         "## 🏗️ Architecture",
         "### Development Workflow",
         "{{cookiecutter.github_org}}/{{cookiecutter.project_slug}}",
-        "src/{{cookiecutter.package_name}}/graphs",
         "Optional workflow graphs powered by Pydantic",
         "pydantic-ai",
         "JSON Schema",
-        "src/{{cookiecutter.package_name}}/utils",
-        "Workflow validations live in src/{{cookiecutter.package_name}}/validation",
+        "Supporting utilities",
+        "src/{{cookiecutter.package_name}}/validation",
         "git config core.hooksPath .githooks",
         "GitHub Actions runs only `uv run pytest -m unit`",
         "pre-commit hook runs unit and integration tests",
@@ -131,6 +136,7 @@ def test_json_schema_definitions_are_valid() -> None:
         TEMPLATE_ROOT
         / "src"
         / "{{cookiecutter.package_name}}"
+        / "{{cookiecutter.package_name}}"
         / "schemas"
         / "workflow_output.schema.json"
     )
@@ -145,23 +151,54 @@ def test_json_schema_definitions_are_valid() -> None:
 
 @pytest.mark.unit
 def test_pyproject_declares_required_dependencies() -> None:
-    pyproject_text = (TEMPLATE_ROOT / "pyproject.toml").read_text()
+    # Workspace root declares uv management
+    workspace_pyproject = (TEMPLATE_ROOT / "pyproject.toml").read_text()
+    assert (
+        "[tool.uv]" in workspace_pyproject and "managed = true" in workspace_pyproject
+    ), "workspace pyproject.toml must declare uv management via [tool.uv]"
 
+    # Runtime dependencies live in the core package's own pyproject.toml
+    core_pyproject = (
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "pyproject.toml"
+    ).read_text()
     required_dependency_snippets = [
         "cellsem-llm-client @ git+https://github.com/Cellular-Semantics/cellsem_llm_client.git@main",
         "deep-research-client @ git+https://github.com/monarch-initiative/deep-research-client.git@main",
         "pydantic-ai>=",
     ]
-    missing = [
-        snippet
-        for snippet in required_dependency_snippets
-        if snippet not in pyproject_text
-    ]
-    assert not missing, f"pyproject.toml missing required dependencies: {missing}"
+    missing = [s for s in required_dependency_snippets if s not in core_pyproject]
+    assert not missing, f"core package pyproject.toml missing required dependencies: {missing}"
 
-    assert (
-        "[tool.uv]" in pyproject_text and "managed = true" in pyproject_text
-    ), "pyproject.toml must declare uv management via [tool.uv]"
+
+@pytest.mark.unit
+def test_pyproject_enforces_coverage_and_excludes_experiments() -> None:
+    pyproject_text = (TEMPLATE_ROOT / "pyproject.toml").read_text()
+    assert "omit" in pyproject_text, \
+        "pyproject.toml must have omit under [tool.coverage.run]"
+    assert "experiments" in pyproject_text, \
+        "pyproject.toml must reference experiments/ in exclusions"
+    assert "fail_under" in pyproject_text, \
+        "pyproject.toml must declare fail_under in [tool.coverage.report]"
+
+
+@pytest.mark.unit
+def test_agent_md_exists_and_has_at_imports() -> None:
+    agent_md = TEMPLATE_ROOT / "AGENT.md"
+    assert agent_md.exists(), "AGENT.md missing from template root"
+    content = agent_md.read_text()
+    assert "@src/" in content, \
+        "AGENT.md must use @ imports to reference canonical prompts/schemas in src/"
+    assert "CLAUDE.md" in content, \
+        "AGENT.md must reference CLAUDE.md so users know how to switch to dev mode"
+
+
+@pytest.mark.unit
+def test_run_workflow_skill_references_agent_md() -> None:
+    skill = TEMPLATE_ROOT / ".claude" / "commands" / "run-workflow.md"
+    assert skill.exists(), ".claude/commands/run-workflow.md skill missing"
+    content = skill.read_text()
+    assert "AGENT.md" in content, \
+        "run-workflow skill must reference AGENT.md"
 
 
 @pytest.mark.unit

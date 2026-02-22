@@ -10,6 +10,27 @@
 
 ## 🚀 Quick Start
 
+### Two Modes of Operation
+
+This project supports two distinct modes:
+
+**Development mode** (default — Claude reads `CLAUDE.md` automatically):
+
+```bash
+claude   # or open in VS Code with Claude Code extension
+```
+
+**Workflow run mode** (Claude acts as the workflow agent):
+
+```bash
+claude --context AGENT.md
+# or within a Claude Code session:
+# /run-workflow
+```
+
+In run mode, Claude uses the same prompts and schemas as the programmatic Python
+implementation — no duplication, single source of truth.
+
 ### Understanding This Scaffold
 
 This project was generated from a standardized template. **See `SCAFFOLD_GUIDE.md` for**:

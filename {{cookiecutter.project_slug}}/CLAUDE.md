@@ -47,6 +47,11 @@ These prevent technical debt and ensure consistency:
 - ✅ **Test structure** - `unit/` and `integration/` with pytest markers
 - ✅ **Tooling configs** - pytest, ruff, mypy, sphinx in `pyproject.toml`
 - ✅ **Dotenv bootstrap** - Environment management via `.env` files
+- ✅ **`experiments/` directory** - Exploratory scripts and Week 0 validation probes;
+  excluded from coverage, mypy, and ruff; not subject to TDD
+- ✅ **`AGENT.md`** - Run-mode agent instructions; references canonical prompts and
+  schemas via `@` imports; keep separate from `CLAUDE.md` (dev instructions)
+- ✅ **`.claude/commands/`** - Claude Code skills; `/run-workflow` switches to run mode
 
 ### Optional Components (Evaluate for Ring 0)
 
