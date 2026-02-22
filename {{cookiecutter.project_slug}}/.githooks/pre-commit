@@ -8,8 +8,13 @@ uv run ruff check --fix src/ tests/
 echo "[githook] Checking formatting..."
 uv run ruff format --check src/ tests/
 
-echo "[githook] Running unit tests..."
-uv run pytest -m unit
+{% if cookiecutter.strict_quality_checks == 'y' %}
+echo "[githook] Running mypy type checking..."
+uv run mypy src/
+{% endif %}
+
+echo "[githook] Running unit tests with coverage..."
+uv run pytest -m unit --cov
 
 echo "[githook] Running integration tests (requires real API keys)..."
 if [[ -z "${OPENAI_API_KEY}" || -z "${ANTHROPIC_API_KEY}" ]]; then

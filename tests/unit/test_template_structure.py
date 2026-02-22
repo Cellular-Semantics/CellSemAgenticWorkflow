@@ -66,6 +66,7 @@ def test_template_contains_minimal_agentic_structure() -> None:
         TEMPLATE_ROOT / "scripts" / "check-docs.py",
         TEMPLATE_ROOT / ".githooks" / "pre-commit",
         TEMPLATE_ROOT / ".github" / "workflows" / "test.yml",
+        TEMPLATE_ROOT / "experiments" / "README.md",
     ]
 
     missing = [p for p in expected_paths if not p.exists()]
@@ -79,6 +80,7 @@ def test_template_contains_minimal_agentic_structure() -> None:
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "services",
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "utils",
         TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "validation",
+        TEMPLATE_ROOT / "experiments",
     ]
     dir_missing = [d for d in expected_directories if not d.is_dir()]
     human_dirs = [_relative(path) for path in dir_missing]
@@ -162,6 +164,24 @@ def test_pyproject_declares_required_dependencies() -> None:
     assert (
         "[tool.uv]" in pyproject_text and "managed = true" in pyproject_text
     ), "pyproject.toml must declare uv management via [tool.uv]"
+
+
+@pytest.mark.unit
+def test_pyproject_enforces_coverage_and_excludes_experiments() -> None:
+    pyproject_text = (TEMPLATE_ROOT / "pyproject.toml").read_text()
+    assert "omit" in pyproject_text, \
+        "pyproject.toml must have omit under [tool.coverage.run]"
+    assert "experiments" in pyproject_text, \
+        "pyproject.toml must reference experiments/ in exclusions"
+    assert "fail_under" in pyproject_text, \
+        "pyproject.toml must declare fail_under in [tool.coverage.report]"
+
+
+@pytest.mark.unit
+def test_pre_commit_hook_runs_coverage() -> None:
+    hook_text = (TEMPLATE_ROOT / ".githooks" / "pre-commit").read_text()
+    assert "--cov" in hook_text, \
+        "pre-commit hook must pass --cov to pytest so fail_under is enforced"
 
 
 @pytest.mark.unit

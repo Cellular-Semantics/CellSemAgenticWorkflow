@@ -28,6 +28,7 @@ markers = [
 [tool.ruff]
 src = ["src", "tests"]
 line-length = 100
+exclude = ["experiments/"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
@@ -41,9 +42,18 @@ python_version = "{{cookiecutter.python_version}}"
 disallow_untyped_defs = true
 strict_optional = true
 warn_unused_ignores = true
+exclude = ["experiments/"]
 
 [tool.coverage.run]
 source = [
     "src/{{cookiecutter.package_name}}",
     "src/{{cookiecutter.package_name}}_validation_tools",
 ]
+omit = ["experiments/*"]
+
+[tool.coverage.report]
+{% if cookiecutter.strict_quality_checks == 'y' %}
+fail_under = 80
+{% else %}
+fail_under = 60
+{% endif %}

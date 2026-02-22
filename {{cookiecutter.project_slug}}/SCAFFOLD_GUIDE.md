@@ -67,6 +67,8 @@ These components prevent technical debt and ensure consistency across all projec
 - **`pyproject.toml`**, tooling configs - Development infrastructure (ruff, mypy, pytest, sphinx)
 - **`.github/workflows/`** - CI/CD pipeline
 - **`.githooks/`** - Pre-commit quality checks
+- **`experiments/`** - Exploratory scripts and Week 0 validation probes; excluded from
+  coverage, mypy, and ruff; not subject to TDD; graduate proven patterns into `src/` with tests
 
 ### Prompt File Naming Convention
 
