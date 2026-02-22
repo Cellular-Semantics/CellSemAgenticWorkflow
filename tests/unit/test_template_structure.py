@@ -69,6 +69,8 @@ def test_template_contains_minimal_agentic_structure() -> None:
         TEMPLATE_ROOT / "experiments" / "README.md",
         TEMPLATE_ROOT / "AGENT.md",
         TEMPLATE_ROOT / ".claude" / "commands" / "run-workflow.md",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "schemas" / "run_provenance.schema.json",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "utils" / "provenance.py",
     ]
 
     missing = [p for p in expected_paths if not p.exists()]
@@ -208,3 +210,40 @@ def test_post_gen_hook_initializes_git_with_remote() -> None:
     contents = hook_path.read_text()
     assert "git init" in contents, "Hook must initialize git repo"
     assert "{{cookiecutter.git_remote}}" in contents, "Hook must configure git remote via template variable"
+
+
+@pytest.mark.unit
+def test_provenance_schema_exists_and_is_valid() -> None:
+    schema_path = (
+        TEMPLATE_ROOT
+        / "src"
+        / "{{cookiecutter.package_name}}"
+        / "{{cookiecutter.package_name}}"
+        / "schemas"
+        / "run_provenance.schema.json"
+    )
+    assert schema_path.exists(), "run_provenance.schema.json missing"
+    schema = json.loads(schema_path.read_text())
+    for key in ("$schema", "title", "type", "properties"):
+        assert key in schema, f"run_provenance.schema.json missing '{key}'"
+    required_fields = {"run_id", "timestamp", "mode", "dry_run"}
+    assert required_fields <= set(schema.get("required", [])), \
+        f"run_provenance.schema.json must require: {required_fields}"
+
+
+@pytest.mark.unit
+def test_provenance_util_has_required_functions() -> None:
+    util_path = (
+        TEMPLATE_ROOT
+        / "src"
+        / "{{cookiecutter.package_name}}"
+        / "{{cookiecutter.package_name}}"
+        / "utils"
+        / "provenance.py"
+    )
+    assert util_path.exists(), "utils/provenance.py missing"
+    content = util_path.read_text()
+    assert "capture_provenance" in content, \
+        "provenance.py must define capture_provenance()"
+    assert "format_dry_run_report" in content, \
+        "provenance.py must define format_dry_run_report()"

@@ -58,10 +58,13 @@ All outputs must conform to these schemas. Validate before returning to the user
 
 ## Output Directory Convention
 
-```
+`provenance.json` is **always the first file written**, even in dry-runs.
+
+```text
 outputs/
 └── {run_name}/
     └── {YYYY-MM-DD_HH-MM-SS}/
+        ├── provenance.json       ← written first, before any LLM calls
         ├── step_1_output.json
         └── summary.json
 ```
@@ -72,10 +75,45 @@ outputs/
 
 If the user requests a dry run:
 
-1. Print all prompts that would be used (already loaded above via @)
-2. List all API calls that would be made, with their parameters
-3. Show the expected output format from the schema
-4. Do **not** execute real API calls
+1. **Capture provenance first** (before any LLM calls):
+   - Run `git describe --tags --always --dirty` and record the output
+   - For each prompt loaded via `@`, record its path and compute `sha256(content)`
+   - Note active model/preset settings and input data
+
+2. **Print the provenance report** in this format:
+
+   ```text
+   === DRY RUN ===
+
+   PROVENANCE
+     Git:     v0.3.1-2-gabcdef (or 'unknown' if not in a tagged repo)
+     Package: {{cookiecutter.package_name}}==<version>
+     Time:    <ISO 8601 UTC timestamp>
+
+   PROMPTS
+     <label>  <path>
+              sha256:<first 16 chars>...
+              --- content ---
+              <full resolved prompt content>
+
+   SCHEMAS
+     <label>  <path>
+              sha256:<first 16 chars>...
+
+   SETTINGS
+     preset: <preset name>
+     model:  <model name>
+     temperature: <value>
+
+   NO CHANGES MADE. Run without --dry-run to execute.
+   ```
+
+3. Write `provenance.json` to `outputs/{run_name}/{timestamp}/provenance.json`
+   conforming to:
+
+   @src/{{cookiecutter.package_name}}/{{cookiecutter.package_name}}/schemas/run_provenance.schema.json
+
+4. Do **not** make any LLM API calls
 
 ---
 

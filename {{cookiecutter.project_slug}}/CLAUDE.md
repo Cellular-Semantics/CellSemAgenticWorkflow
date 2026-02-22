@@ -499,8 +499,9 @@ presets:
 **Required:**
 - ✅ Save intermediate outputs at each step
 - ✅ Structured output directory: `outputs/{project}/{query}/{timestamp}/`
+  - `provenance.json` is always written **first** (before any LLM calls, including dry-runs)
 - ✅ Ability to resume from any step
-- ✅ Dry-run mode (show all prompts/calls without executing)
+- ✅ Dry-run mode (show all prompts/calls without executing; still writes provenance.json)
 
 **Example:**
 ```python
