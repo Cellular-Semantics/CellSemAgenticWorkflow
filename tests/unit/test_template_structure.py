@@ -78,12 +78,12 @@ def test_template_contains_minimal_agentic_structure() -> None:
     assert not missing, f"Missing template files/directories: {human_readable}"
 
     expected_directories = [
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "agents",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "graphs",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "schemas",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "services",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "utils",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "validation",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "agents",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "graphs",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "schemas",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "services",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "utils",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "validation",
         TEMPLATE_ROOT / "experiments",
         TEMPLATE_ROOT / ".claude",
         TEMPLATE_ROOT / ".claude" / "commands",
@@ -201,6 +201,24 @@ def test_run_workflow_skill_references_agent_md() -> None:
     content = skill.read_text()
     assert "AGENT.md" in content, \
         "run-workflow skill must reference AGENT.md"
+
+
+@pytest.mark.unit
+def test_pyproject_enforces_coverage_and_excludes_experiments() -> None:
+    pyproject_text = (TEMPLATE_ROOT / "pyproject.toml").read_text()
+    assert "omit" in pyproject_text, \
+        "pyproject.toml must have omit under [tool.coverage.run]"
+    assert "experiments" in pyproject_text, \
+        "pyproject.toml must reference experiments/ in exclusions"
+    assert "fail_under" in pyproject_text, \
+        "pyproject.toml must declare fail_under in [tool.coverage.report]"
+
+
+@pytest.mark.unit
+def test_pre_commit_hook_runs_coverage() -> None:
+    hook_text = (TEMPLATE_ROOT / ".githooks" / "pre-commit").read_text()
+    assert "--cov" in hook_text, \
+        "pre-commit hook must pass --cov to pytest so fail_under is enforced"
 
 
 @pytest.mark.unit
