@@ -49,6 +49,9 @@ These prevent technical debt and ensure consistency:
 - ✅ **Dotenv bootstrap** - Environment management via `.env` files
 - ✅ **`experiments/` directory** - Exploratory scripts and Week 0 validation probes;
   excluded from coverage, mypy, and ruff; not subject to TDD
+- ✅ **`AGENT.md`** - Run-mode agent instructions; references canonical prompts and
+  schemas via `@` imports; keep separate from `CLAUDE.md` (dev instructions)
+- ✅ **`.claude/commands/`** - Claude Code skills; `/run-workflow` switches to run mode
 
 ### Optional Components (Evaluate for Ring 0)
 
@@ -502,8 +505,9 @@ presets:
 **Required:**
 - ✅ Save intermediate outputs at each step
 - ✅ Structured output directory: `outputs/{project}/{query}/{timestamp}/`
+  - `provenance.json` is always written **first** (before any LLM calls, including dry-runs)
 - ✅ Ability to resume from any step
-- ✅ Dry-run mode (show all prompts/calls without executing)
+- ✅ Dry-run mode (show all prompts/calls without executing; still writes provenance.json)
 
 **Example:**
 ```python

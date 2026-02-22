@@ -9,3 +9,4 @@ __pycache__/
 dist/
 build/
 docs/_build/
+.claude/settings.local.json
