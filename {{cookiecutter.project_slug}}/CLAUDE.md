@@ -21,6 +21,19 @@ Ring 3 (Speculative):          Experiments
 
 **RULE: Cannot work on Ring N+1 until Ring N is shipped and validated with users**
 
+### Ring Graduation
+
+When Ring 0 is complete (all scope items checked off below) and you are helping with Ring 1
+work, remind the developer:
+
+> "Ring 0 appears complete. Before starting Ring 1, run:
+> `python scripts/graduate-ring.py --to 1`
+> This raises the coverage floor to 80%, adds mypy to both the pre-commit hook and CI,
+> and keeps hook and CI consistent. Review the diff before committing."
+
+The project starts at Ring 0 (60% coverage, no mypy). `graduate-ring.py --to 1` patches
+`.githooks/pre-commit`, `.github/workflows/test.yml`, and `pyproject.toml` in place.
+
 **Timeline:**
 (treat week numbers as relative timings/durations here - actual agentic dev may be faster)
 - Week 0: Validate constraints

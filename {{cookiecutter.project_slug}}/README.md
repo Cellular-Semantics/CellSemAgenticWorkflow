@@ -166,8 +166,8 @@ without executing any LLM calls.
 
 - **Unit tests** (`tests/unit`, `@pytest.mark.unit`): no network, deterministic, fast
 - **Integration tests** (`tests/integration`, `@pytest.mark.integration`): real APIs, fail hard if env vars missing — no mocks
-- **Coverage**: enforced via `fail_under` in `pyproject.toml`
-- **CI policy**: GitHub Actions runs only `uv run pytest -m unit`; run integration tests locally with real API keys before pushing
+- **Coverage**: 60% floor enforced (Ring 0 default); run `python scripts/graduate-ring.py --to 1` when Ring 0 ships to raise to 80% and add mypy
+- **CI**: ruff lint, ruff format check, unit tests with coverage. Integration tests are skipped in CI — run them locally before pushing
 - **Hooks**: pre-commit hook runs unit and integration tests before every commit (skips integration if API keys missing)
 
 ---
@@ -193,10 +193,11 @@ uv run pytest                    # all tests
 uv run pytest -m unit            # unit only
 uv run pytest -m integration     # integration only (requires API keys)
 
-# Code quality
+# Code quality (Ring 0)
 uv run ruff check --fix src/ tests/
 uv run ruff format src/ tests/
-uv run mypy src/
+# mypy is added when you graduate to Ring 1:
+# python scripts/graduate-ring.py --to 1
 
 # Docs
 python scripts/check-docs.py

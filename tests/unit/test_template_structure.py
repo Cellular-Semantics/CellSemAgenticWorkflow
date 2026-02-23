@@ -26,18 +26,14 @@ def test_cookiecutter_json_defines_core_variables() -> None:
         "python_version",
         "github_org",
         "git_remote",
-        "strict_quality_checks",
     }
     missing = required_keys.difference(config)
     assert not missing, f"cookiecutter.json missing keys: {sorted(missing)}"
 
-    # Validate strict_quality_checks is a list with 'y' and 'n' options
-    assert isinstance(config["strict_quality_checks"], list), \
-        "strict_quality_checks must be a list of options"
-    assert "y" in config["strict_quality_checks"], \
-        "strict_quality_checks must include 'y' option"
-    assert "n" in config["strict_quality_checks"], \
-        "strict_quality_checks must include 'n' option"
+    assert "strict_quality_checks" not in config, (
+        "strict_quality_checks must be removed from cookiecutter.json; "
+        "projects always start at Ring 0 and graduate via scripts/graduate-ring.py"
+    )
 
 
 @pytest.mark.unit
@@ -64,6 +60,7 @@ def test_template_contains_minimal_agentic_structure() -> None:
         TEMPLATE_ROOT / "tests" / "integration" / "test_integration_env.py",
         TEMPLATE_ROOT / "docs" / "conf.py",
         TEMPLATE_ROOT / "scripts" / "check-docs.py",
+        TEMPLATE_ROOT / "scripts" / "graduate-ring.py",
         TEMPLATE_ROOT / ".githooks" / "pre-commit",
         TEMPLATE_ROOT / ".github" / "workflows" / "test.yml",
         TEMPLATE_ROOT / "experiments" / "README.md",
@@ -78,12 +75,12 @@ def test_template_contains_minimal_agentic_structure() -> None:
     assert not missing, f"Missing template files/directories: {human_readable}"
 
     expected_directories = [
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "agents",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "graphs",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "schemas",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "services",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "utils",
-        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "validation",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "agents",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "graphs",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "schemas",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "services",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "utils",
+        TEMPLATE_ROOT / "src" / "{{cookiecutter.package_name}}" / "{{cookiecutter.package_name}}" / "validation",
         TEMPLATE_ROOT / "experiments",
         TEMPLATE_ROOT / ".claude",
         TEMPLATE_ROOT / ".claude" / "commands",
@@ -107,9 +104,10 @@ def test_template_contains_minimal_agentic_structure() -> None:
         "Supporting utilities",
         "src/{{cookiecutter.package_name}}/validation",
         "git config core.hooksPath .githooks",
-        "GitHub Actions runs only `uv run pytest -m unit`",
+        "Integration tests are skipped in CI",
         "pre-commit hook runs unit and integration tests",
         "Generated repo auto-inits git and sets origin to",
+        "graduate-ring.py",
     ]
     absent = [fragment for fragment in expected_fragments if fragment not in readme_text]
     assert not absent, f"README missing required sections: {absent}"
@@ -120,7 +118,6 @@ def test_template_contains_minimal_agentic_structure() -> None:
         "uv sync --dev",
         "uv run ruff check",
         "uv run ruff format --check",
-        "uv run mypy",
         "uv run pytest -m unit",
         'python-version: ["3.10", "3.11", "3.12"]',
         "exit 0 # skip integration tests in CI",
@@ -129,7 +126,6 @@ def test_template_contains_minimal_agentic_structure() -> None:
         fragment for fragment in workflow_fragments if fragment not in workflow_text
     ]
     assert not workflow_missing, f"Workflow missing required commands: {workflow_missing}"
-
 
 
 @pytest.mark.unit
@@ -179,8 +175,51 @@ def test_pyproject_enforces_coverage_and_excludes_experiments() -> None:
         "pyproject.toml must have omit under [tool.coverage.run]"
     assert "experiments" in pyproject_text, \
         "pyproject.toml must reference experiments/ in exclusions"
-    assert "fail_under" in pyproject_text, \
-        "pyproject.toml must declare fail_under in [tool.coverage.report]"
+    assert "fail_under = 60" in pyproject_text, \
+        "pyproject.toml must declare Ring 0 default fail_under = 60 (no Jinja2 conditional)"
+    assert "{%" not in pyproject_text, \
+        "pyproject.toml must not contain Jinja2 conditionals after generation"
+
+
+@pytest.mark.unit
+def test_pre_commit_hook_ring0_defaults() -> None:
+    hook_text = (TEMPLATE_ROOT / ".githooks" / "pre-commit").read_text()
+    assert "--cov" in hook_text, \
+        "pre-commit hook must pass --cov to pytest so fail_under is enforced"
+    assert "--cov-fail-under=60" in hook_text, \
+        "pre-commit hook must enforce Ring 0 coverage floor of 60%"
+    assert "graduate-ring.py" in hook_text, \
+        "pre-commit hook must reference graduate-ring.py so developers know how to escalate"
+    assert "uv run mypy" not in hook_text, \
+        "pre-commit hook must NOT run mypy in Ring 0 (run graduate-ring.py --to 1 to enable)"
+    assert "{%" not in hook_text, \
+        "pre-commit hook must not contain Jinja2 conditionals"
+
+
+@pytest.mark.unit
+def test_ci_workflow_ring0_defaults() -> None:
+    ci_text = (TEMPLATE_ROOT / ".github" / "workflows" / "test.yml").read_text()
+    assert "--cov-fail-under=60" in ci_text, \
+        "CI workflow must enforce Ring 0 coverage floor of 60%"
+    assert "uv run mypy" not in ci_text, \
+        "CI workflow must NOT run mypy in Ring 0 (consistent with pre-commit hook)"
+    assert "{%" not in ci_text, \
+        "CI workflow must not contain Jinja2 syntax (file is copy_without_render)"
+
+
+@pytest.mark.unit
+def test_graduate_ring_script_exists_and_patches_files() -> None:
+    script_path = TEMPLATE_ROOT / "scripts" / "graduate-ring.py"
+    assert script_path.exists(), "scripts/graduate-ring.py missing"
+    content = script_path.read_text()
+    assert "--to" in content, \
+        "graduate-ring.py must accept a --to <ring> argument"
+    assert "pre-commit" in content, \
+        "graduate-ring.py must patch the pre-commit hook"
+    assert "test.yml" in content, \
+        "graduate-ring.py must patch the CI workflow"
+    assert "pyproject.toml" in content, \
+        "graduate-ring.py must patch pyproject.toml"
 
 
 @pytest.mark.unit
@@ -201,24 +240,6 @@ def test_run_workflow_skill_references_agent_md() -> None:
     content = skill.read_text()
     assert "AGENT.md" in content, \
         "run-workflow skill must reference AGENT.md"
-
-
-@pytest.mark.unit
-def test_pyproject_enforces_coverage_and_excludes_experiments() -> None:
-    pyproject_text = (TEMPLATE_ROOT / "pyproject.toml").read_text()
-    assert "omit" in pyproject_text, \
-        "pyproject.toml must have omit under [tool.coverage.run]"
-    assert "experiments" in pyproject_text, \
-        "pyproject.toml must reference experiments/ in exclusions"
-    assert "fail_under" in pyproject_text, \
-        "pyproject.toml must declare fail_under in [tool.coverage.report]"
-
-
-@pytest.mark.unit
-def test_pre_commit_hook_runs_coverage() -> None:
-    hook_text = (TEMPLATE_ROOT / ".githooks" / "pre-commit").read_text()
-    assert "--cov" in hook_text, \
-        "pre-commit hook must pass --cov to pytest so fail_under is enforced"
 
 
 @pytest.mark.unit

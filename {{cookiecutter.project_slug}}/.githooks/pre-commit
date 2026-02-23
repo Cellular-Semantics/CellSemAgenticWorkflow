@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Ring 0 defaults — run scripts/graduate-ring.py --to 1 when Ring 0 ships
 set -o errexit
 set -o pipefail
 
@@ -8,17 +9,8 @@ uv run ruff check --fix src/ tests/
 echo "[githook] Checking formatting..."
 uv run ruff format --check src/ tests/
 
-{% if cookiecutter.strict_quality_checks == 'y' %}
-echo "[githook] Running mypy type checking..."
-uv run mypy src/
-{% endif %}
-
 echo "[githook] Running unit tests with coverage..."
-{% if cookiecutter.strict_quality_checks == 'y' %}
-uv run pytest -m unit --cov --cov-fail-under=80
-{% else %}
 uv run pytest -m unit --cov --cov-fail-under=60
-{% endif %}
 
 echo "[githook] Running integration tests (requires real API keys)..."
 if [[ -z "${OPENAI_API_KEY}" || -z "${ANTHROPIC_API_KEY}" ]]; then
