@@ -1,6 +1,8 @@
 # CellSem Agentic Workflow Template
 
 > Standard cookiecutter template for the Cellular Semantics team. Generates reproducible, production-ready agentic workflow repositories.
+>
+> **Status:** The following documents how this template is intended to work. Many features have been tested in semi-vibe-coded library development, but this is a work in progress — YMMV.
 
 [![Template Tests](https://github.com/Cellular-Semantics/CellSemAgenticWorkflow/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/Cellular-Semantics/CellSemAgenticWorkflow/actions/workflows/tests.yml)
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -18,8 +20,7 @@ Cellular Semantics team's accumulated approach to avoiding those failure modes.
 
 - A project that works the same way whether you run it programmatically or hand it to a
   Claude agent — prompts and schemas are the shared source of truth for both.
-- Validation built in from day one, not retrofitted: every run writes a provenance record
-  before touching any API.
+- Validation built in from day one, not retrofitted: every run writes a provenance record before touching any API.
 - A ring-based development discipline that stops scope from expanding before an MVP ships.
 - Automated quality checks that scale with the project: loose for exploratory Week 0,
   tighter once the MVP is proven.
@@ -31,13 +32,9 @@ Cellular Semantics team's accumulated approach to avoiding those failure modes.
 ### Declarative prompts and schemas
 
 Prompts live in versioned `.prompt.yaml` files co-located with the code that uses them —
-never hardcoded in Python. Schemas live in `schemas/` as JSON Schema files that serve as
-the single contract between agents, services, and tests. Pydantic models are generated
-from those JSON schemas, not written by hand, so the schema stays canonical.
+never hardcoded in Python. Schemas live in `schemas/` as JSON Schema files that serve as the single contract between agents, services, and tests. Pydantic models are generated from those JSON schemas, not written by hand, so the schema stays canonical.
 
-This makes it trivial to review a prompt change (`git diff **/*.prompt.yaml`), reproduce
-any past run by checking out an old commit, and share the same prompts between the Python
-runtime and the Claude agent without duplication.
+This makes it trivial to review a prompt change (`git diff **/*.prompt.yaml`), reproduce any past run by checking out an old commit, and share the same prompts between the Python runtime and the Claude agent without duplication.
 
 ### Dual-mode operation
 
@@ -65,8 +62,7 @@ exits without making any API calls, making it safe to inspect a workflow before 
 
 ### Ring-based development
 
-Projects move through rings. You cannot start Ring N+1 until Ring N has shipped and been
-validated with users.
+Projects move through rings. You cannot start Ring N+1 until Ring N has shipped and been validated with users.
 
 ```text
 Exploratory (Week 0)  →  Ring 0 (MVP)  →  Ring 1  →  Ring 2  →  …
@@ -79,8 +75,7 @@ The `strict_quality_checks` cookiecutter variable encodes which ring you are sta
 | `n` | Ring 0 (MVP) | 60% | No |
 | `y` | Ring 1+ | 80% | Yes |
 
-This prevents quality gates from blocking an MVP while ensuring they are in place before
-the codebase matures.
+This prevents quality gates from blocking an MVP while ensuring they are in place before the codebase matures.
 
 ---
 

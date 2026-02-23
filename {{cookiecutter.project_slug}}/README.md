@@ -174,6 +174,10 @@ without executing any LLM calls.
 
 ## 🛠️ Development
 
+> This project was generated from the [CellSem Agentic Workflow Template](https://github.com/Cellular-Semantics/CellSemAgenticWorkflow).
+> The template is a work in progress — some features have been tested in semi-vibe-coded
+> library development but YMMV. Check the template repo for known issues and updates.
+
 Read `CLAUDE.md` for the full development philosophy (TDD-first, ring-based scope
 discipline, prompt and schema conventions). The short version:
 
