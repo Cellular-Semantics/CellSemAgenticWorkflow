@@ -105,9 +105,11 @@ step and keeps all three consistent. Run it when Ring 0 ships; review the diff b
 │   ├── unit/                       # Fast, no network, @pytest.mark.unit
 │   └── integration/                # Real APIs, fail hard if keys missing, @pytest.mark.integration
 ├── docs/                           # Sphinx + MyST; auto-built and checked pre-commit
-├── scripts/check-docs.py           # Build docs with warnings-as-errors
-├── .githooks/pre-commit            # Lint → unit tests → integration tests (if keys present)
-├── .github/workflows/test.yml      # CI: lint + unit tests only (no API keys needed)
+├── scripts/
+│   ├── check-docs.py               # Build docs with warnings-as-errors
+│   └── graduate-ring.py            # Escalate quality gates: Ring 0 → Ring 1
+├── .githooks/pre-commit            # Lint → coverage (60%) → integration tests (if keys present)
+├── .github/workflows/test.yml      # CI: lint, format, unit tests + coverage (no mypy in Ring 0)
 └── .claude/commands/run-workflow.md  # /run-workflow skill: switches Claude to agent mode
 ```
 
