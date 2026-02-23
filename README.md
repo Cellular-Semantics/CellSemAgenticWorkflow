@@ -68,14 +68,16 @@ Projects move through rings. You cannot start Ring N+1 until Ring N has shipped 
 Exploratory (Week 0)  →  Ring 0 (MVP)  →  Ring 1  →  Ring 2  →  …
 ```
 
-The `strict_quality_checks` cookiecutter variable encodes which ring you are starting in:
+All projects start at Ring 0. Quality gates are deliberately loose so an MVP can ship quickly,
+then tightened once Ring 0 has been validated with users.
 
-| Setting | Ring | Coverage floor | mypy on commit |
+| Ring | Coverage floor | mypy on commit | How to get there |
 | --- | --- | --- | --- |
-| `n` | Ring 0 (MVP) | 60% | No |
-| `y` | Ring 1+ | 80% | Yes |
+| Ring 0 (default) | 60% | No | Generated automatically |
+| Ring 1+ | 80% | Yes | `python scripts/graduate-ring.py --to 1` |
 
-This prevents quality gates from blocking an MVP while ensuring they are in place before the codebase matures.
+`graduate-ring.py` patches the pre-commit hook, CI workflow, and `pyproject.toml` in one
+step and keeps all three consistent. Run it when Ring 0 ships; review the diff before committing.
 
 ---
 
@@ -132,17 +134,19 @@ multi-source synthesis. Include if your Ring 0 involves research-heavy steps; re
 
 ## Quality checks
 
-| Check | When it runs | Tool |
-| --- | --- | --- |
-| Lint + format | commit, CI | `ruff check --fix` + `ruff format --check` |
-| Type checking | commit (Ring 1+) | `mypy src/` |
-| Unit tests | commit, CI | `pytest -m unit` |
-| Integration tests | commit (if API keys present) | `pytest -m integration` |
-| Docs build | commit | `python scripts/check-docs.py` |
-| Coverage floor | CI | 60% (Ring 0) or 80% (Ring 1+) |
+| Check | Ring 0 | Ring 1+ | Where |
+| --- | --- | --- | --- |
+| Ruff lint + format | ✅ | ✅ | commit + CI |
+| Unit tests + coverage | ✅ 60% floor | ✅ 80% floor | commit + CI |
+| mypy type checking | ❌ | ✅ | commit + CI |
+| Integration tests | ✅ (if keys present) | ✅ (if keys present) | commit only |
+| Docs build | ✅ | ✅ | commit |
 
-Integration tests use real APIs and fail hard if keys are absent. There are no mocks.
-CI runs only unit tests to avoid requiring secrets in GitHub Actions.
+All projects start at Ring 0. Run `python scripts/graduate-ring.py --to 1` when Ring 0 ships
+to patch the hook, CI, and `pyproject.toml` to Ring 1 settings in one step.
+
+Integration tests use real APIs and fail hard if keys are absent — no mocks.
+CI skips integration tests to avoid requiring secrets in GitHub Actions.
 
 ---
 
@@ -156,7 +160,7 @@ pipx install cookiecutter
 cookiecutter gh:Cellular-Semantics/CellSemAgenticWorkflow
 
 # Answer prompts: project_name, project_slug, package_name, python_version,
-# github_org, git_remote, strict_quality_checks (n = Ring 0, y = Ring 1+)
+# github_org, git_remote
 
 cd <your-project-slug>
 uv sync --dev

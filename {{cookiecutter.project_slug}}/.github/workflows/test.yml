@@ -1,4 +1,5 @@
 name: Tests
+# Ring 0 defaults — run scripts/graduate-ring.py --to 1 when Ring 0 ships
 
 on:
   push:
@@ -43,18 +44,10 @@ jobs:
       - name: Ruff format (check only)
         run: uv run ruff format --check src/ tests/
 
-      - name: Type check
-        run: uv run mypy src/
-
       - name: Unit tests with coverage
-        run: |
-          {% if cookiecutter.strict_quality_checks == 'y' %}
-          uv run pytest -m unit --cov --cov-fail-under=80 --cov-report=xml
-          {% else %}
-          uv run pytest -m unit --cov --cov-fail-under=60 --cov-report=xml
-          {% endif %}
+        run: uv run pytest -m unit --cov --cov-fail-under=60 --cov-report=xml
 
       - name: Integration tests (skipped)
         run: |
-          echo "Integration tests require real API keys; run locally before pushing."
+          echo "Integration tests are skipped in CI — run locally with real API keys before pushing."
           exit 0 # skip integration tests in CI
